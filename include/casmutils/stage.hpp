@@ -6,21 +6,16 @@
 #include <casm/CASM_global_definitions.hh>
 #include <iostream>
 
-namespace SuperBoxy
+namespace Simplicity
 {
-// Given a structure, find all the supercells between volumes min_vol and max_vol
-std::vector<Rewrap::Structure> make_supercells(Rewrap::Structure& structure, int min_vol, int max_vol);
+/// Find all the niggli super lattices for a given volume
+std::vector<CASM::Lattice> make_niggli_superlattices(const CASM::Lattice& unit_lat, int vol);
 
-// Find surface area given a lattice
-double lattice_surface_area(const CASM::Lattice& lat);
+/// Find the most boxy lattice of the ones given based on volume/surface_area ratio
+CASM::Lattice most_boxy(std::vector<CASM::Lattice>& lattices);
 
-// volume to surface_area ratio
-double boxy_score(const CASM::Lattice& lat);
+/// Find the supercell of given volume with the highest volume/surface_area ratio
+Rewrap::Structure make_boxy_structure(const Rewrap::Structure& unit_struc, int vol);
 
-// Find the supercell with the highest volume/surface_area ratio of the ones given
-Rewrap::Structure most_boxy(std::vector<Rewrap::Structure>& supercells);
-
-// Find the most boxy supercell at each volume
-std::vector<Rewrap::Structure> make_boxy_supercells(Rewrap::Structure& structure, int min_vol, int max_vol);
-} // namespace SuperBoxy
+} // namespace Simplicity
 #endif

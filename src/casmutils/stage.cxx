@@ -13,29 +13,26 @@
 #include <casm/crystallography/Niggli.hh>
 #include <set>
 
-namespace SuperBoxy
+namespace Simplicity
 {
 
-std::vector<Rewrap::Lattice> make_superlattices_of_size(Rewrap::Structure& tile, int volume);
-
-std::vector<Rewrap::Structure> make_supercells(Rewrap::Structure& structure, int min_vol, int max_vol)
+// Enumerates all superlattices for a given volume and returns their niggli forms
+std::vector<CASM::Lattice> make_niggli_superlattices(const CASM::Lattice& unit_lat, int vol)
 {
-    std::vector<Rewrap::Structure> all_supercells;
-    int max_vol_incl = max_vol + 1;
-    CASM::ScelEnumProps enum_props(min_vol, max_vol_incl);
-    CASM::SupercellEnumerator<CASM::Lattice> lat_enumerator(structure.lattice(), enum_props);
+    std::vector<CASM::Lattice> niggli_lattices;
+    CASM::ScelEnumProps enum_props(vol, vol + 1); // Enumerates over a range of volumes
+    CASM::SupercellEnumerator<CASM::Lattice> lat_enumerator(unit_lat, enum_props);
 
-    for(const auto& lat : lat_enumerator)
+    for (const auto& lat : lat_enumerator)
     {
-        //TODO: Make niggli before creating structure
-        auto super = Simplicity::make_niggli(structure.create_superstruc(lat));
-        all_supercells.push_back(super);
+        auto lat_niggli = niggli(lat, CASM::TOL);
+        niggli_lattices.push_back(lat_niggli);
     }
 
-    return all_supercells;
+    return niggli_lattices;
 }
 
-// surface area from lattice borrowed from John Goiri
+// Finds the surface area from lattice paramteres
 double lattice_surface_area(const CASM::Lattice& lat)
 {
     Eigen::Vector3d a = lat[0];
@@ -49,44 +46,40 @@ double lattice_surface_area(const CASM::Lattice& lat)
     return std::abs(ab) + std::abs(bc) + std::abs(ca);
 }
 
-// score for determining level of boxiness, borrowed from John Goiri
+// Score for determining level of boxiness
 double boxy_score(const CASM::Lattice& lat)
 {
-    // Less surface area per volume means more boxy
-    // i.e. more volume per surface area means more boxy
+    // More volume per surface area means more boxy
     return std::abs(lat.vol()) / lattice_surface_area(lat);
 }
 
 // Finds the supercell with the highest volume/surface_area
-// Assuming that the input has structures of same volume
-Rewrap::Structure most_boxy(std::vector<Rewrap::Structure>& supercells)
+// Assumes that the input has structures of same volume
+CASM::Lattice most_boxy(std::vector<CASM::Lattice>& lattices)
 {
     double running_score = 0;
-    Rewrap::Structure boxiest_scel = supercells[0];
-    for (const auto& scel : supercells)
+    CASM::Lattice boxiest_lat = lattices[0];
+    for (const auto& lat : lattices)
     {
-        double candidate_score = boxy_score(scel.lattice());
+        double candidate_score = boxy_score(lat);
         if (candidate_score > running_score)
         {
             running_score = candidate_score;
-            boxiest_scel = scel;
+            boxiest_lat = lat;
         }
     }
 
-    return boxiest_scel;
+    return boxiest_lat;
 }
 
-// Find the boxiest supercell per volume for range of volumes
-std::vector<Rewrap::Structure> make_boxy_supercells(Rewrap::Structure& structure, int min_vol, int max_vol)
+// Given a structure and volume, finds the most boxy supercell
+Rewrap::Structure make_boxy_structure(const Rewrap::Structure& unit_struc, int vol)
 {
-    std::vector<Rewrap::Structure> boxy_supercells;
-    int max_vol_incl = max_vol + 1;
-    for (int a = min_vol; a < max_vol_incl; ++a)
-    {
-        std::vector<Rewrap::Structure> same_vol_scels = make_supercells(structure, a, a);
-        Rewrap::Structure same_vol_boxy = most_boxy(same_vol_scels);
-        boxy_supercells.push_back(same_vol_boxy);
-    }
-    return boxy_supercells;
+    auto unit_lat = unit_struc.lattice();
+    auto lattices = make_niggli_superlattices(unit_lat, vol);
+    auto most_boxy_lat = most_boxy(lattices);
+    Rewrap::Structure boxiest_struc = unit_struc.create_superstruc(most_boxy_lat);
+    return boxiest_struc;
 }
-} // namespace SuperBoxy
+
+} // namespace Simplicity

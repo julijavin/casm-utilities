@@ -56,17 +56,16 @@ int main(int argc, char* argv[])
     auto my_vol = super_boxy_launch.fetch<int>("volume");
 
     // find most boxy structure of given volume
-    auto my_boxy_struc = Simplicity::make_boxy_structure(my_struc, my_vol);
+    auto my_boxy_struc = Simplicity::make_boxy_superstructure(my_struc, my_vol);
 
     // output
     if (super_boxy_launch.vm().count("output"))
     {
         Simplicity::write_poscar(my_boxy_struc, super_boxy_launch.fetch<fs::path>("output"));
-        return 0;
     }
     else
     {
         Simplicity::print_poscar(my_boxy_struc, std::cout);
-        return 0;
     }
+    return 0;
 }

@@ -12,10 +12,10 @@ namespace Simplicity
 std::vector<CASM::Lattice> make_niggli_superlattices(const CASM::Lattice& unit_lat, int vol);
 
 /// Find the most boxy lattice of the ones given based on volume/surface_area ratio
-CASM::Lattice most_boxy(std::vector<CASM::Lattice>& lattices);
+CASM::Lattice most_boxy(const std::vector<CASM::Lattice>& lattices);
 
 /// Find the supercell of given volume with the highest volume/surface_area ratio
-Rewrap::Structure make_boxy_structure(const Rewrap::Structure& unit_struc, int vol);
+Rewrap::Structure make_boxy_superstructure(const Rewrap::Structure& unit_struc, int vol);
 
 } // namespace Simplicity
 #endif

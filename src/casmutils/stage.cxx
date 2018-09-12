@@ -55,7 +55,7 @@ double boxy_score(const CASM::Lattice& lat)
 
 // Finds the supercell with the highest volume/surface_area
 // Assumes that the input has structures of same volume
-CASM::Lattice most_boxy(std::vector<CASM::Lattice>& lattices)
+CASM::Lattice most_boxy(const std::vector<CASM::Lattice>& lattices)
 {
     double running_score = 0;
     CASM::Lattice boxiest_lat = lattices[0];
@@ -73,7 +73,7 @@ CASM::Lattice most_boxy(std::vector<CASM::Lattice>& lattices)
 }
 
 // Given a structure and volume, finds the most boxy supercell
-Rewrap::Structure make_boxy_structure(const Rewrap::Structure& unit_struc, int vol)
+Rewrap::Structure make_boxy_superstructure(const Rewrap::Structure& unit_struc, int vol)
 {
     auto unit_lat = unit_struc.lattice();
     auto lattices = make_niggli_superlattices(unit_lat, vol);
